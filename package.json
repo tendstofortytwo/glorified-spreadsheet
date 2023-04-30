@@ -1,0 +1,29 @@
+{
+  "name": "glorified-spreadsheet",
+  "version": "0.0.1",
+  "description": "A personal budget tracker",
+  "main": "index.mjs",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tendstofortytwo/glorified-spreadsheet.git"
+  },
+  "author": "Naman Sood",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/tendstofortytwo/glorified-spreadsheet/issues"
+  },
+  "homepage": "https://github.com/tendstofortytwo/glorified-spreadsheet#readme",
+  "dependencies": {
+    "@fastify/formbody": "^7.4.0",
+    "@fastify/static": "^6.10.1",
+    "@fastify/view": "^7.4.1",
+    "fastify": "^4.15.0",
+    "pug": "^3.0.2",
+    "sqlite": "^4.1.2",
+    "sqlite3": "^5.1.6"
+  },
+  "type": "module"
+}

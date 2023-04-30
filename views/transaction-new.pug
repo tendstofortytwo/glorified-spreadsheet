@@ -1,0 +1,37 @@
+extends layout.pug
+
+block heading
+    | new transaction
+
+block prepend breadcrumbs
+    -
+        links.push(...[
+            ['new transaction', '/transactions/new']
+        ])
+
+block content
+    form(method='post')
+        | $
+        input(type='number', name='amount', placeholder='amount', step='0.01', required)
+        br
+        input(type='radio', name='type', value='expense', id='type_expense', required, checked)
+        label(for='type_expense') expense 💸
+        input(type='radio', name='type', value='income', id='type_income', required)
+        label(for='type_income') income 💰
+        br
+        input(type='text', name='description', placeholder='description', required)
+        br
+        label(for='account_id') account
+        select(name='account_id' required)
+            each a in accounts
+                option(value=a.id, selected=a.selected)= a.name
+        br
+        label(for='tags') tags
+        select(name='tags', multiple)
+            each t in tags
+                option(value=t.id, selected=t.selected)= t.name
+        br
+        textarea(name='notes', cols=30, rows=10, placeholder='notes (optional)')
+        br
+        input(type='submit', value='add transaction')
+        

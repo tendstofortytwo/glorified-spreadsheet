@@ -1,0 +1,16 @@
+extends layout.pug
+
+block heading
+    | new tag
+
+block prepend breadcrumbs
+    -
+        links.push(...[
+            ['new tag', '/tags/new']
+        ])
+
+block content
+    form(method='post')
+        input(type='text', name='name', placeholder='tag name', required)
+        br
+        input(type='submit', value='add tag')

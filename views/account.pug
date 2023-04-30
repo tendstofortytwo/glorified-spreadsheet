@@ -1,0 +1,24 @@
+extends layout.pug
+
+block heading
+    | account #{account.name}
+
+block prepend breadcrumbs
+    -
+        links.push(...[
+            ['account ' + account.name, '/accounts/' + account.id]
+        ])
+
+block content
+    a(href='/transactions/new?account_id=' + account.id) new transaction
+    table
+        tr
+            th description
+            th amount
+            th timestamp
+        each t in transactions
+            tr
+                td
+                    a(href='/transactions/' + t.id)= t.description
+                td= currency(t.amount)
+                td= datetime(t.timestamp)

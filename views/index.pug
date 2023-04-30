@@ -1,0 +1,23 @@
+extends layout.pug
+
+block heading
+    | glorified spreadsheet
+
+block content
+    each a in accounts
+        a(href='/accounts/' + a.id)= a.name
+        br
+    a(href='/accounts/new') add account
+    table
+        tr
+            th description
+            th amount
+            th timestamp
+            th account
+        each t in transactions
+            tr
+                td
+                    a(href='/transactions/' + t.id)= t.description
+                td= currency(t.amount)
+                td= datetime(t.timestamp)
+                td= t.account_name

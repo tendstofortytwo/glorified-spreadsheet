@@ -1,0 +1,16 @@
+extends layout.pug
+
+block heading
+    | new account
+
+block prepend breadcrumbs
+    -
+        links.push(...[
+            ['new account', '/accounts/new']
+        ])
+
+block content
+    form(method='post')
+        input#(type='text', name='name', placeholder='account name', required)
+        br
+        input(type='submit', value='add account')
