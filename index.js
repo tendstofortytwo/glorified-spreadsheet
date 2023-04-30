@@ -22,7 +22,7 @@ function displayDatetime(datetime) {
 }
 
 function displayCurrency(amt) {
-	return Number(amt) / 100;
+	return (Number(amt) / 100).toFixed(2);
 }
 
 async function main() {
@@ -52,7 +52,10 @@ async function main() {
 			 from transactions join accounts on accounts.id = transactions.account_id
 			 order by transactions.timestamp desc`
 		);
-		res.view('views/index.pug', {accounts, transactions});
+		const total = (await db.get(
+			`select sum(amount) as total from transactions`
+		)).total;
+		res.view('views/index.pug', {accounts, transactions, total});
 		return res;
 	});
 
@@ -83,8 +86,13 @@ async function main() {
 			'select * from transactions where account_id = ? order by timestamp desc',
 			[req.params.id]
 		);
+		const total = (await db.get(
+			`select sum(amount) as total from transactions
+			 where account_id = ?`,
+			[req.params.id]
+		)).total;
 		const account = await db.get('select * from accounts where id = ?', req.params.id);
-		res.view('views/account.pug', {transactions, account});
+		res.view('views/account.pug', {transactions, account, total});
 		return res;
 	});
 

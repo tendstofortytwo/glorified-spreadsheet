@@ -13,6 +13,9 @@ block content
     a(href='/transactions/new?account_id=' + account.id) new transaction
     table
         tr
+            th total balance
+            td(colspan=2)= currency(total)
+        tr
             th description
             th amount
             th timestamp
