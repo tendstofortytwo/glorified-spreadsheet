@@ -1,9 +1,10 @@
 
 import sqlite3 from 'sqlite3';
 import { open } from 'sqlite';
+import config from './config.pii.js';
 
 const db = await open({
-    filename: 'blockchain.db',
+    filename: config.db || 'blockchain.db',
     driver: sqlite3.Database
 });
 

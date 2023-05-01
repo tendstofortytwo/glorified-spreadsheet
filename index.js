@@ -6,6 +6,7 @@ import pug from 'pug';
 import db from './db.js';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import config from './config.pii.js';
 
 const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
@@ -27,7 +28,8 @@ function displayCurrency(amt) {
 
 async function main() {
 	const app = fastify({
-		logger: true
+		logger: true,
+		https: config.https
 	});
 
 	app.register(fastifyView, {
@@ -182,7 +184,7 @@ async function main() {
 		return res;
 	});
 
-	await app.listen({ port: process.env.PORT || 3000, host: '::' });
+	await app.listen({ port: config.port || 3000, host: '::' });
 }
 
 await main();
