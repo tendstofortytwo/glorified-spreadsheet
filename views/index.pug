@@ -11,11 +11,12 @@ block content
     table
         tr
             th net worth
-            td(colspan=3)= currency(total)
+            td(colspan=4)= currency(total)
         tr
             th description
             th amount
             th timestamp
+            th tags
             th account
         each t in transactions
             tr
@@ -23,4 +24,5 @@ block content
                     a(href='/transactions/' + t.id)= t.description
                 td= currency(t.amount)
                 td= datetime(t.timestamp)
+                td= t.tags
                 td= t.account_name

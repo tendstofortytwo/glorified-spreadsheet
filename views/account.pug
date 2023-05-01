@@ -14,14 +14,16 @@ block content
     table
         tr
             th total balance
-            td(colspan=2)= currency(total)
+            td(colspan=3)= currency(total)
         tr
             th description
             th amount
             th timestamp
+            th tags
         each t in transactions
             tr
                 td
                     a(href='/transactions/' + t.id)= t.description
                 td= currency(t.amount)
                 td= datetime(t.timestamp)
+                td= t.tags

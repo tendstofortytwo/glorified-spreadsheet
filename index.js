@@ -48,8 +48,13 @@ async function main() {
 	app.get('/', async (_req, res) => {
 		const accounts = await db.all('select * from accounts');
 		const transactions = await db.all(
-			`select transactions.*, accounts.name as account_name 
-			 from transactions join accounts on accounts.id = transactions.account_id
+			`select
+				transactions.*, accounts.name as account_name, group_concat(tags.name, ', ') as tags
+			 from 
+			 	(transactions join accounts on accounts.id = transactions.account_id)
+				left join (transaction_tags join tags on transaction_tags.tag_id = tags.id)
+				on transactions.id = transaction_tags.trans_id
+			 group by transactions.id
 			 order by transactions.timestamp desc`
 		);
 		const total = (await db.get(
@@ -83,7 +88,15 @@ async function main() {
 
 	app.get('/accounts/:id', async (req, res) => {
 		const transactions = await db.all(
-			'select * from transactions where account_id = ? order by timestamp desc',
+			`select
+				transactions.*, accounts.name as account_name, group_concat(tags.name, ', ') as tags
+			 from 
+			 	(transactions join accounts on accounts.id = transactions.account_id)
+				left join (transaction_tags join tags on transaction_tags.tag_id = tags.id)
+				on transactions.id = transaction_tags.trans_id
+			 where account_id = ?
+			 group by transactions.id
+			 order by transactions.timestamp desc`,
 			[req.params.id]
 		);
 		const total = (await db.get(
@@ -142,7 +155,6 @@ async function main() {
 		const tags = (
 			await db.all(`select * from tags left join transaction_tags on tags.id = transaction_tags.tag_id`)
 		).map(t => ({...t, selected: t.trans_id === transaction.id}));
-		console.log(transaction, accounts, tags);
 		res.view('views/transaction.pug', {accounts, transaction, tags});
 		return res;
 	});
