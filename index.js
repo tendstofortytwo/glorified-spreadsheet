@@ -154,9 +154,14 @@ async function main() {
 		req.params.id);
 		const accounts = (await db.all('select * from accounts'))
 			.map(a => ({...a, selected: transaction.account_id.toString() === a.id.toString()}));
-		const tags = (
-			await db.all(`select * from tags left join transaction_tags on tags.id = transaction_tags.tag_id`)
-		).map(t => ({...t, selected: t.trans_id === transaction.id}));
+		const transactionTags = (await db.all(
+			`select tag_id
+			 from transaction_tags
+			 where trans_id = ?`,
+			transaction.id)
+		).map(t => t.tag_id);
+		const tags = (await db.all(`select * from tags`))
+			.map(t => ({...t, selected: transactionTags.indexOf(t.id) >= 0}));
 		res.view('views/transaction.pug', {accounts, transaction, tags});
 		return res;
 	});
