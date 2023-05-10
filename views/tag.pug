@@ -1,0 +1,29 @@
+extends layout.pug
+
+block heading
+    | tag #{tag.name}
+
+block prepend breadcrumbs
+    -
+        links.push(...[
+            ['tag ' + tag.name, '/tags/' + tag.id]
+        ])
+
+block content
+    a(href='/transactions/new?tag_id=' + tag.id) new transaction
+    table
+        tr
+            th total balance
+            td(colspan=3)= currency(total)
+        tr
+            th description
+            th amount
+            th timestamp
+            th tags
+        each t in transactions
+            tr
+                td
+                    a(href='/transactions/' + t.id)= t.description
+                td= currency(t.amount)
+                td= datetime(t.timestamp)
+                td= t.tags

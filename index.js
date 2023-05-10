@@ -49,6 +49,7 @@ async function main() {
 
 	app.get('/', async (_req, res) => {
 		const accounts = await db.all('select * from accounts');
+		const tags = await db.all('select * from tags');
 		const transactions = await db.all(
 			`select
 				transactions.*, accounts.name as account_name, group_concat(tags.name, ', ') as tags
@@ -59,10 +60,8 @@ async function main() {
 			 group by transactions.id
 			 order by transactions.timestamp desc`
 		);
-		const total = (await db.get(
-			`select sum(amount) as total from transactions`
-		)).total;
-		res.view('views/index.pug', {accounts, transactions, total});
+		const { total } = await db.get(`select sum(amount) as total from transactions`);
+		res.view('views/index.pug', {accounts, tags, transactions, total});
 		return res;
 	});
 
@@ -88,6 +87,29 @@ async function main() {
 		return res;
 	});
 
+	app.get('/tags/:id', async (req, res) => {
+		const transactions = await db.all(
+			`select
+				transactions.*, accounts.name as account_name, group_concat(tags.name, ', ') as tags
+			 from 
+			 	(transactions join accounts on accounts.id = transactions.account_id)
+				left join (transaction_tags join tags on transaction_tags.tag_id = tags.id)
+				on transactions.id = transaction_tags.trans_id
+			 where transaction_tags.tag_id = ?
+			 group by transactions.id
+			 order by transactions.timestamp desc`,
+			[req.params.id]
+		);
+		const { total } = await db.get(
+			`select sum(amount) as total 
+			from (transactions join transaction_tags on transaction_tags.trans_id = transactions.id)
+			where tag_id = ?`,
+			[req.params.id]);
+		const tag = await db.get('select * from tags where id = ?', req.params.id);
+		res.view('views/tag.pug', {transactions, tag, total});
+		return res;
+	});
+
 	app.get('/accounts/:id', async (req, res) => {
 		const transactions = await db.all(
 			`select
@@ -101,11 +123,8 @@ async function main() {
 			 order by transactions.timestamp desc`,
 			[req.params.id]
 		);
-		const total = (await db.get(
-			`select sum(amount) as total from transactions
-			 where account_id = ?`,
-			[req.params.id]
-		)).total;
+		const { total } = await db.get(`select sum(amount) as total from transactions where account_id = ?`,
+			[req.params.id]);
 		const account = await db.get('select * from accounts where id = ?', req.params.id);
 		res.view('views/account.pug', {transactions, account, total});
 		return res;

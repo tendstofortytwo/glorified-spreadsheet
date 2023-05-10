@@ -4,10 +4,18 @@ block heading
     | glorified spreadsheet
 
 block content
-    each a in accounts
-        a(href='/accounts/' + a.id)= a.name
-        br
-    a(href='/accounts/new') add account
+    div.accounts-list
+        each a, idx in accounts
+            a(href='/accounts/' + a.id)= a.name
+            if idx !== accounts.length - 1
+                |  | 
+    div.tags-list
+        each t, idx in tags
+            a(href='/tags/' + t.id)= t.name
+            if idx !== tags.length - 1
+                |  | 
+    a(href='/accounts/new') new account
+    a(href='/tags/new') new tag
     table
         tr
             th net worth
