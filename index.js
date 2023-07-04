@@ -156,7 +156,12 @@ async function main() {
 		)).lastID;
 
 		if(req.body.tags) {
-			for(const tagID of req.body.tags) {
+			// req.body.tags is a <select> multiselect. turns out if you select only one option, it'll show up as a
+			// string, but if you select multiple options, it'll show up as an array. and javascript just lets you
+			// index into strings like arrays :D
+			const tags = (typeof req.body.tags === 'string') ? [ req.body.tags ] : req.body.tags;
+			console.log(tags);
+			for(const tagID of tags) {
 				await db.get('insert into transaction_tags(trans_id, tag_id) values(?, ?)', [transactionID, tagID]);
 			}
 		}
@@ -204,7 +209,6 @@ async function main() {
 			// index into strings like arrays :D
 			const tags = (typeof req.body.tags === 'string') ? [ req.body.tags ] : req.body.tags;
 			for(const tagID of tags) {
-				console.log(req.params.id, tagID);
 				await db.get('insert into transaction_tags(trans_id, tag_id) values(?, ?)', [req.params.id, tagID]);
 			}
 		}
