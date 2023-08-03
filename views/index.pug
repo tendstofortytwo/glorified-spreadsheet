@@ -16,21 +16,37 @@ block content
                 |  | 
     a(href='/accounts/new') new account
     a(href='/tags/new') new tag
+    form(method='get')
+        br
+        input(type='submit', value='filter by date range')
+        |  start (inclusive): 
+        input(type='date', name='startDate', value=dateRange.start)
+        |  end (exclusive): 
+        input(type='date', name='endDate', value=dateRange.end)
     table
         tr
             th net worth
             td(colspan=4)= currency(total)
+        if rangeTotal != null
+            tr
+                th total in range
+                td(colspan=4)= currency(rangeTotal)
         tr
             th description
             th amount
             th timestamp
             th tags
             th account
-        each t in transactions
+        if transactions.length === 0
             tr
-                td
-                    a(href='/transactions/' + t.id)= t.description
-                td= currency(t.amount)
-                td= datetime(t.timestamp)
-                td= t.tags
-                td= t.account_name
+                td(colspan=5)
+                    center no transactions in range.
+        else
+            each t in transactions
+                tr
+                    td
+                        a(href='/transactions/' + t.id)= t.description
+                    td= currency(t.amount)
+                    td= datetime(t.timestamp)
+                    td= t.tags
+                    td= t.account_name

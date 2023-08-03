@@ -11,19 +11,35 @@ block prepend breadcrumbs
 
 block content
     a(href='/transactions/new?account_id=' + account.id) new transaction
+    form(method='get')
+        br
+        input(type='submit', value='filter by date range')
+        |  start (inclusive): 
+        input(type='date', name='startDate', value=dateRange.start)
+        |  end (exclusive): 
+        input(type='date', name='endDate', value=dateRange.end)
     table
         tr
             th total balance
             td(colspan=3)= currency(total)
+        if rangeTotal != null
+            tr
+                th total in range
+                td(colspan=3)= currency(rangeTotal)
         tr
             th description
             th amount
             th timestamp
             th tags
-        each t in transactions
+        if transactions.length === 0
             tr
-                td
-                    a(href='/transactions/' + t.id)= t.description
-                td= currency(t.amount)
-                td= datetime(t.timestamp)
-                td= t.tags
+                td(colspan=4)
+                    center no transactions in range.
+        else
+            each t in transactions
+                tr
+                    td
+                        a(href='/transactions/' + t.id)= t.description
+                    td= currency(t.amount)
+                    td= datetime(t.timestamp)
+                    td= t.tags

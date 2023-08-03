@@ -12,6 +12,9 @@ const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
+// will be used as the default value for "start date range" when filtering by date
+const beginningOfTime = '2023-01-01';
+
 function displayDatetime(datetime) {
 	const dt = new Date(datetime);
 	const date = dt.getDate().toString().padStart(2, '0');
@@ -47,7 +50,11 @@ async function main() {
 		prefix: '/static/'
 	});
 
-	app.get('/', async (_req, res) => {
+	app.get('/', async (req, res) => {
+		const dateRange = {
+			start: req.query.startDate ?? beginningOfTime,
+			end: req.query.endDate ?? (new Date()).toISOString().split('T')[0]
+		};
 		const accounts = await db.all('select * from accounts');
 		const tags = await db.all('select * from tags');
 		const transactions = await db.all(
@@ -57,11 +64,23 @@ async function main() {
 			 	(transactions join accounts on accounts.id = transactions.account_id)
 				left join (transaction_tags join tags on transaction_tags.tag_id = tags.id)
 				on transactions.id = transaction_tags.trans_id
+			 where
+			 	timestamp between ? and ?
 			 group by transactions.id
-			 order by transactions.timestamp desc`
+			 order by transactions.timestamp desc`,
+			 [ dateRange.start, dateRange.end ]
 		);
 		const { total } = await db.get(`select sum(amount) as total from transactions`);
-		res.view('views/index.pug', {accounts, tags, transactions, total});
+		// if either range marker was provided, compute the total in range as well
+		let rangeTotal = null;
+		if(req.query.startDate || req.query.endDate) {
+			rangeTotal = (await db.get(
+				`select sum(amount) as total from transactions
+				 where timestamp between ? and ?`,
+				[ dateRange.start, dateRange.end ]
+			)).total || 0;
+		}
+		res.view('views/index.pug', {accounts, tags, transactions, total, dateRange, rangeTotal});
 		return res;
 	});
 
@@ -88,6 +107,10 @@ async function main() {
 	});
 
 	app.get('/tags/:id', async (req, res) => {
+		const dateRange = {
+			start: req.query.startDate ?? beginningOfTime,
+			end: req.query.endDate ?? (new Date()).toISOString().split('T')[0]
+		};
 		const transactions = await db.all(
 			`select
 				transactions.*, accounts.name as account_name, group_concat(tags.name, ', ') as tags
@@ -95,22 +118,38 @@ async function main() {
 			 	(transactions join accounts on accounts.id = transactions.account_id)
 				left join (transaction_tags join tags on transaction_tags.tag_id = tags.id)
 				on transactions.id = transaction_tags.trans_id
-			 where transaction_tags.tag_id = ?
+			 where
+			 	transaction_tags.tag_id = ?
+				and timestamp between ? and ?
 			 group by transactions.id
 			 order by transactions.timestamp desc`,
-			[req.params.id]
+			[req.params.id, dateRange.start, dateRange.end]
 		);
 		const { total } = await db.get(
 			`select sum(amount) as total 
 			from (transactions join transaction_tags on transaction_tags.trans_id = transactions.id)
 			where tag_id = ?`,
 			[req.params.id]);
+		// if either range marker was provided, compute the total in range as well
+		let rangeTotal = null;
+		if(req.query.startDate || req.query.endDate) {
+			rangeTotal = (await db.get(
+				`select sum(amount) as total 
+				 from (transactions join transaction_tags on transaction_tags.trans_id = transactions.id)
+				 where tag_id = ? and timestamp between ? and ?`,
+				[ dateRange.start, dateRange.end ]
+			)).total || 0;
+		}
 		const tag = await db.get('select * from tags where id = ?', req.params.id);
-		res.view('views/tag.pug', {transactions, tag, total});
+		res.view('views/tag.pug', {transactions, tag, total, dateRange, rangeTotal});
 		return res;
 	});
 
 	app.get('/accounts/:id', async (req, res) => {
+		const dateRange = {
+			start: req.query.startDate ?? beginningOfTime,
+			end: req.query.endDate ?? (new Date()).toISOString().split('T')[0]
+		};
 		const transactions = await db.all(
 			`select
 				transactions.*, accounts.name as account_name, group_concat(tags.name, ', ') as tags
@@ -118,15 +157,27 @@ async function main() {
 			 	(transactions join accounts on accounts.id = transactions.account_id)
 				left join (transaction_tags join tags on transaction_tags.tag_id = tags.id)
 				on transactions.id = transaction_tags.trans_id
-			 where account_id = ?
+			 where
+			 	account_id = ? and
+				timestamp between ? and ?
 			 group by transactions.id
 			 order by transactions.timestamp desc`,
-			[req.params.id]
+			[req.params.id, dateRange.start, dateRange.end]
 		);
 		const { total } = await db.get(`select sum(amount) as total from transactions where account_id = ?`,
 			[req.params.id]);
+		// if either range marker was provided, compute the total in range as well
+		let rangeTotal = null;
+		if(req.query.startDate || req.query.endDate) {
+			rangeTotal = (await db.get(
+				`select sum(amount) as total 
+				 from transactions
+				 where account_id = ? and timestamp between ? and ?`,
+				[ req.params.id, dateRange.start, dateRange.end ]
+			)).total || 0;
+		}
 		const account = await db.get('select * from accounts where id = ?', req.params.id);
-		res.view('views/account.pug', {transactions, account, total});
+		res.view('views/account.pug', {transactions, account, total, dateRange, rangeTotal});
 		return res;
 	});
 
