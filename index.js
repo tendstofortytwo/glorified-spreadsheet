@@ -137,7 +137,7 @@ async function main() {
 				`select sum(amount) as total 
 				 from (transactions join transaction_tags on transaction_tags.trans_id = transactions.id)
 				 where tag_id = ? and timestamp between ? and ?`,
-				[ dateRange.start, dateRange.end ]
+				[ req.params.id, dateRange.start, dateRange.end ]
 			)).total || 0;
 		}
 		const tag = await db.get('select * from tags where id = ?', req.params.id);
