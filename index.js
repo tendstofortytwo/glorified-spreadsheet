@@ -29,6 +29,12 @@ function displayCurrency(amt) {
 	return (Number(amt) / 100).toFixed(2);
 }
 
+function tomorrow() {
+	const d = new Date();
+	d.setDate(d.getDate() + 1);
+	return d;
+}
+
 async function main() {
 	const app = fastify({
 		logger: true,
@@ -53,7 +59,7 @@ async function main() {
 	app.get('/', async (req, res) => {
 		const dateRange = {
 			start: req.query.startDate ?? beginningOfTime,
-			end: req.query.endDate ?? (new Date()).toISOString().split('T')[0]
+			end: req.query.endDate ?? tomorrow().toISOString().split('T')[0]
 		};
 		const accounts = await db.all('select * from accounts');
 		const tags = await db.all('select * from tags');
@@ -109,7 +115,7 @@ async function main() {
 	app.get('/tags/:id', async (req, res) => {
 		const dateRange = {
 			start: req.query.startDate ?? beginningOfTime,
-			end: req.query.endDate ?? (new Date()).toISOString().split('T')[0]
+			end: req.query.endDate ?? tomorrow().toISOString().split('T')[0]
 		};
 		const transactions = await db.all(
 			`select
@@ -148,7 +154,7 @@ async function main() {
 	app.get('/accounts/:id', async (req, res) => {
 		const dateRange = {
 			start: req.query.startDate ?? beginningOfTime,
-			end: req.query.endDate ?? (new Date()).toISOString().split('T')[0]
+			end: req.query.endDate ?? tomorrow().toISOString().split('T')[0]
 		};
 		const transactions = await db.all(
 			`select
