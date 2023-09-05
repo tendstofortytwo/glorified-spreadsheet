@@ -15,6 +15,18 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 // will be used as the default value for "start date range" when filtering by date
 const beginningOfTime = '2023-01-01';
 
+function htmlFormDatetime(datetime) {
+	// JS ISO string is guaranteed to be of the form YYYY-MM-DDTHH:mm:ss.sssZ
+	const dt = new Date(datetime);
+	const date = dt.getDate().toString().padStart(2, '0');
+	const month = (dt.getMonth() + 1).toString().padStart(2, '0');
+	const year = dt.getFullYear().toString();
+	const hour = dt.getHours().toString().padStart(2, '0');
+	const min = dt.getMinutes().toString().padStart(2, '0');
+	const sec = dt.getSeconds().toString().padStart(2, '0');
+	return `${year}-${month}-${date}T${hour}:${min}:${sec}`;
+}
+
 function displayDatetime(datetime) {
 	const dt = new Date(datetime);
 	const date = dt.getDate().toString().padStart(2, '0');
@@ -45,7 +57,8 @@ async function main() {
 		engine: {pug},
 		defaultContext: {
 			datetime: displayDatetime,
-			currency: displayCurrency
+			currency: displayCurrency,
+			formtime: htmlFormDatetime,
 		}
 	});
 
@@ -191,7 +204,8 @@ async function main() {
 		const accounts = (await db.all('select * from accounts'))
 			.map(a => ({...a, selected: req.query.account_id === a.id.toString()}));
 		const tags = await db.all('select * from tags');
-		res.view('views/transaction-new.pug', {accounts, tags});
+		const now = htmlFormDatetime(Date.now());
+		res.view('views/transaction-new.pug', {accounts, tags, now});
 		return res;
 	});
 
@@ -204,7 +218,7 @@ async function main() {
 		const transactionID = (await db.run(
 			'insert into transactions(timestamp, amount, description, account_id, notes) values(?, ?, ?, ?, ?)',
 			[
-				(new Date()).toISOString(),
+				(new Date(req.body.timestamp)).toISOString(),
 				multipliers[req.body.type] * req.body.amount * 100,
 				req.body.description,
 				req.body.account_id,
@@ -249,12 +263,13 @@ async function main() {
 
 	app.post('/transactions/:id', async (req, res) => {
 		await db.run(
-			'update transactions set amount = ?, description = ?, account_id = ?, notes = ? where id = ?',
+			'update transactions set amount = ?, description = ?, account_id = ?, notes = ?, timestamp = ? where id = ?',
 			[
 				multipliers[req.body.type] * req.body.amount * 100,
 				req.body.description,
 				req.body.account_id,
 				req.body.notes,
+				(new Date(req.body.timestamp)).toISOString(),
 				req.params.id
 			]
 		);

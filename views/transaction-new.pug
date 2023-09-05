@@ -31,6 +31,9 @@ block content
             each t in tags
                 option(value=t.id, selected=t.selected)= t.name
         br
+        label(for='timestamp') timestamp
+        input(type='datetime-local', name='timestamp', value=now)
+        br
         textarea(name='notes', cols=30, rows=10, placeholder='notes (optional)')
         br
         input(type='submit', value='add transaction')
