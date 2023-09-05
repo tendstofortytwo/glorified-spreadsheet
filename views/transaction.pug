@@ -35,7 +35,7 @@ block content
                 option(value=t.id, selected=t.selected)= t.name
         br
         label(for='timestamp') timestamp
-        input(type='datetime-local', name='timestamp', value=formtime(transaction.timestamp))
+        input(type='datetime-local', name='timestamp', required, value=formtime(transaction.timestamp))
         br
         textarea(name='notes', cols=30, rows=10, placeholder='notes (optional)')= transaction.notes
         br
