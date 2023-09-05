@@ -274,6 +274,14 @@ async function main() {
 		return res;
 	});
 
+	app.post('/transactions/:id/delete', async (req, res) => {
+		const { account_id } = await db.get('select account_id from transactions where id = ?', req.params.id);
+		await db.run('delete from transaction_tags where trans_id = ?', req.params.id);
+		await db.run('delete from transactions where id = ?', req.params.id);
+		res.redirect('/accounts/' + account_id);
+		return res;
+	});
+
 	await app.listen({ port: config.port || 3000, host: '::' });
 }
 

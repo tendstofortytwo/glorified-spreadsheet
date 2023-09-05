@@ -36,4 +36,5 @@ block content
         textarea(name='notes', cols=30, rows=10, placeholder='notes (optional)')= transaction.notes
         br
         input(type='submit', value='update transaction')
-        
+    form(method='post', action=transaction.id + '/delete')
+        input(type='submit', value='delete transaction')
