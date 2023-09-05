@@ -11,6 +11,8 @@ block prepend breadcrumbs
         ])
 
 block content
+    form(method='post', action=transaction.id + '/delete', id='delete')
+        input(type='submit', value='delete transaction')
     form(method='post')
         | $
         input(type='number', name='amount', placeholder='amount', step='0.01', required value=currency(Math.abs(transaction.amount)))
@@ -38,5 +40,3 @@ block content
         textarea(name='notes', cols=30, rows=10, placeholder='notes (optional)')= transaction.notes
         br
         input(type='submit', value='update transaction')
-    form(method='post', action=transaction.id + '/delete')
-        input(type='submit', value='delete transaction')

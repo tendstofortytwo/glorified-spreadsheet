@@ -7,8 +7,10 @@ body {
     line-height: 1.6;
 }
 
-form + form {
-    margin-top: 8rem;
+form#delete {
+    position: absolute;
+    top: 0;
+    right: 0;
 }
   
 table {
