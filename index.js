@@ -214,17 +214,21 @@ async function main() {
 		expense: -1
 	};
 
-	app.post('/transactions/new', async (req, res) => {
-		const transactionID = (await db.run(
+	async function addTransaction(transaction) {
+		return db.run(
 			'insert into transactions(timestamp, amount, description, account_id, notes) values(?, ?, ?, ?, ?)',
 			[
-				(new Date(req.body.timestamp)).toISOString(),
-				multipliers[req.body.type] * req.body.amount * 100,
-				req.body.description,
-				req.body.account_id,
-				req.body.notes
+				(new Date(transaction.timestamp)).toISOString(),
+				multipliers[transaction.type] * transaction.amount * 100,
+				transaction.description,
+				transaction.account_id,
+				transaction.notes
 			]
-		)).lastID;
+		);
+	}
+
+	app.post('/transactions/new', async (req, res) => {
+		const transactionID = (await addTransaction(req.body)).lastID;
 
 		if(req.body.tags) {
 			// req.body.tags is a <select> multiselect. turns out if you select only one option, it'll show up as a
@@ -238,6 +242,40 @@ async function main() {
 		}
 
 		res.redirect(`/accounts/${req.body.account_id}`);
+		return res;
+	});
+
+	app.get('/transfer', async (req, res) => {
+		const accounts = await db.all('select * from accounts');
+		res.view('views/transfer.pug', {accounts});
+		return res;
+	});
+
+	app.post('/transfer', async (req, res) => {
+		const { from_name } = await db.get('select name as from_name from accounts where id = ?', req.body.from_id);
+		const { to_name } = await db.get('select name as to_name from accounts where id = ?', req.body.to_id);
+
+		const from = {
+			timestamp: htmlFormDatetime(Date.now()),
+			type: 'expense',
+			amount: req.body.amount,
+			description: `transfer to ${to_name}`,
+			account_id: req.body.from_id,
+			notes: ''
+		};
+
+		const to = {
+			timestamp: htmlFormDatetime(Date.now()),
+			type: 'income',
+			amount: req.body.amount,
+			description: `transfer from ${from_name}`,
+			account_id: req.body.to_id,
+			notes: ''
+		};
+
+		await addTransaction(from);
+		await addTransaction(to);
+		res.redirect('/');
 		return res;
 	});
 

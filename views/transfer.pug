@@ -1,0 +1,27 @@
+extends layout.pug
+
+block heading
+    | balance transfer
+
+block prepend breadcrumbs
+    -
+        links.push(...[
+            ['balance transfer', '/transfer']
+        ])
+
+block content
+    form(method='post')
+        label(for='from_id') from 
+        select(name='from_id' required)
+            each a in accounts
+                option(value=a.id)= a.name
+        br
+        | send $
+        input(type='number', name='amount', placeholder='amount', step='0.01', required)
+        br
+        label(for='to_id') to 
+        select(name='to_id' required)
+            each a in accounts
+                option(value=a.id)= a.name
+        br
+        input(type='submit', value='transfer')
