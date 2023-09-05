@@ -6,6 +6,10 @@ body {
     align-items: center;
     line-height: 1.6;
 }
+
+form + form {
+    margin-top: 8rem;
+}
   
 table {
     border-collapse: collapse;
