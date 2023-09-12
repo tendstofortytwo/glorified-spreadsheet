@@ -32,7 +32,7 @@ block content
                 option(value=t.id, selected=t.selected)= t.name
         br
         label(for='timestamp') timestamp
-        input(type='datetime-local', name='timestamp', required, value=now)
+        input(type='datetime-local', name='timestamp', required, step='1', value=now)
         br
         textarea(name='notes', cols=30, rows=10, placeholder='notes (optional)')
         br
