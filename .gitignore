@@ -1,3 +1,4 @@
 node_modules
 blockchain.db
 *.pii.js
+tsproxy-state
