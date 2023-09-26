@@ -24,6 +24,7 @@ var (
 )
 
 func main() {
+	flag.Parse()
 	srv := &tsnet.Server{
 		Dir:      "./tsproxy-state/",
 		Hostname: *hostname,
@@ -35,7 +36,7 @@ func main() {
 	handle(err)
 	ln, err := srv.ListenTLS("tcp", ":443")
 	handle(err)
-	log.Printf("tsproxy forwarding from https://%s to localhost:%v\n", *hostname, port)
+	log.Printf("tsproxy forwarding from https://%s to localhost:%v\n", *hostname, *port)
 	done := make(chan bool)
 	go func() {
 		for {
